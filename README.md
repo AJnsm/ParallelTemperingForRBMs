@@ -6,7 +6,13 @@ This repository contains the code to train restricted Boltzmann machines (RBMs) 
 ./magneto/magneto.exe -L=8 -TMin=1.8 -TMax=1.8 -TSteps=1 -N1=10000 -N2=25000 -N3=100 -states=testStates -record=main
 ```
 
-I then trained 10 RBMs on this data (all with 64 visible and hidden nodes), using either standard contrastive divergence, or parallel tempering with $K$ parallel chains. The mean and standard deviation across these 10 machines, along the first 500 training epochs, are shown here (plot taken from the notebook in this repo):
+I then trained 10 RBMs on this data (all with 64 visible and hidden nodes), using either standard contrastive divergence, or parallel tempering with $K$ parallel chains:
+
+```
+python rbm_train.PT --json inputs_example.json
+```
+
+The mean and standard deviation across these 10 machines, along the first 500 training epochs, are shown here (plot taken from the notebook in this repo):
 
 ![Log-likelihood comparison](IsingPT.png)
 

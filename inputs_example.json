@@ -9,7 +9,7 @@
   "kCD": 1,
   "image_output_dir": "./",
   "text_output_dir": "Data_PT1_lr001/Data_analysis_ID1/" ,
-  "training_data": "Ising_8x8/state_new0_25k.txt" ,
+  "training_data": "state_new0_25k.txt" ,
   "lrate": 0.001,
   "momentum": 0.0,
   "weight_decay": 0.0,
