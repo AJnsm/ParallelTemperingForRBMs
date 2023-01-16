@@ -1,6 +1,6 @@
 # Training RBMs with Parallel Tempering
 
-This repository contains the code to train restricted Boltzmann machines (RBMs) on data generated from Ising models. The Ising data is generated using Magneto (https://github.com/s9w/magneto). The RBM model implementation is based on that used by the authors of (https://arxiv.org/abs/1810.11503). I implemented (persistent) contrastive divergence, or parallel tempering in PyTorch, based on the PyDeep implementation of RBM samplers (https://pydeep.readthedocs.io/en/latest/_modules/pydeep/rbm/sampler.html). I generated 25k samples from an $8 \times 8$ Ising model, at a temperature of $T=1.8$, with toroidal boundary conditions using Magneto:
+This repository contains the code to train restricted Boltzmann machines (RBMs) on data generated from Ising models. The Ising data is generated using Magneto (https://github.com/s9w/magneto). The RBM model implementation is based on that used by the authors of (https://arxiv.org/abs/1810.11503). I implemented (persistent) contrastive divergence and parallel tempering in PyTorch, based on the PyDeep implementation of RBM samplers (https://pydeep.readthedocs.io/en/latest/_modules/pydeep/rbm/sampler.html). I generated 25k samples from an $8 \times 8$ Ising model, at a temperature of $T=1.8$, with toroidal boundary conditions using Magneto:
 
 ```
 ./magneto/magneto.exe -L=8 -TMin=1.8 -TMax=1.8 -TSteps=1 -N1=10000 -N2=25000 -N3=100 -states=testStates -record=main
@@ -9,14 +9,14 @@ This repository contains the code to train restricted Boltzmann machines (RBMs) 
 I then trained 10 RBMs on this data (all with 64 visible and hidden nodes), using either standard contrastive divergence, or parallel tempering with $K$ parallel chains:
 
 ```
-python rbm_train.PT --json inputs_example.json
+python rbm_train_PT.py --json inputs_example.json
 ```
 
-The mean and standard deviation across these 10 machines, along the first 500 training epochs, are shown here (plot taken from the notebook in this repo):
+The mean and standard deviation of the log-likelihood across these 10 machines, along the first 500 training epochs, are shown here (plot taken from the notebook in this repo):
 
 ![Log-likelihood comparison](IsingPT.png)
 
-It can be seen that switching to PCD (i.e. K=1) already improved the convergence, but gradients were noisy. Increasing $K$ made the convergence even faster, and more stable. More information on these training schemes, and where this improvement comes from, is printed below. 
+It can be seen that switching from contrastive divergence (CD) to PCD (i.e. K=1) already improved the convergence on average, but gradients were noisy. Increasing $K$ made the convergence even faster, and more stable. More information on these training schemes, and where this improvement comes from, is printed below. 
 
 ## Contrastive divergence
 RBMs are traditionally trained with contrastive divergence, where the gradients are based on how training examples are propagated through the hidden layer. Contrastive divergence training suffers from the fact that the Markov chains converge to the true distribution more slowly as the network weights grow, making training unstable (Fischer, 2010). To stabilise training, I explored a technique called parallel tempering. One problem with contrastive divergence is that the gradients are only calculated closely around training examples. To get around this, one could increase $k_{CD}$, but doing so quickly becomes computationally expensive. Another solution, referred to as persistent contrastive divergence (PCD), is to first initialise the Markov chain with a random state, but afterwards use the sample that resulted from $k_{CD}$ Gibbs samplings to initialise the next chain. Like this, the gradients can be estimated in a less restricted part of sample space. However, since the network weights change at each PCD iteration, the Markov chain is never actually initialised with a sample from the model distribution. To mitigate this effect, PCD requires a smaller learning rate (Fischer, 2010). However, PCD still suffers from emphasising areas of model space where the chain is currently running. This problem is addressed by sampling the state space using a technique called Parallel Tempering.
